@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>元宝 Bot 控制台</title>
+    <style>
+        /* ═══════════════════════════════════════════
+           Apple Design System — 元宝 Bot Control v3.0
+           ═══════════════════════════════════════════ */
+
+        :root, [data-theme="light"] {
+            --primary: #0066cc; --primary-hover: #0071e3; --primary-on-dark: #2997ff;
+            --ink: #1d1d1f; --ink-muted-80: #333; --ink-muted-48: #7a7a7a;
+            --canvas: #fff; --canvas-parchment: #f5f5f7; --surface-pearl: #fafafc;
+            --surface-tile-1: #272729; --surface-tile-2: #2a2a2c; --surface-tile-3: #252527;
+            --surface-black: #000; --surface-chip: #d2d2d7;
+            --divider-soft: #f0f0f0; --hairline: #e0e0e0;
+            --success: #34c759; --warning: #ff9500; --danger: #ff3b30;
+            --accent: var(--primary); --accent-hover: var(--primary-hover);
+            --bg-primary: var(--canvas-parchment); --bg-secondary: var(--canvas);
+            --bg-card: var(--canvas); --bg-tab: var(--canvas-parchment);
+            --border: var(--hairline); --border-soft: var(--divider-soft);
+            --text-primary: var(--ink); --text-secondary: var(--ink-muted-48);
+            --text-muted: #ccc; --input-bg: var(--canvas-parchment);
+            --msg-self: #e8f0fe; --msg-other: var(--canvas);
+            --tab-bar-bg: rgba(245,245,247,0.92); --tab-bar-height: 50px;
+            --toast-bg: rgba(29,29,31,0.92); --nav-bg: var(--surface-black);
+            --nav-text: #fff; --surface-raised: var(--canvas);
+        }
+        [data-theme="dark"] {
+            --primary: #2997ff; --primary-hover: #40a9ff;
+            --ink: #fff; --ink-muted-80: #ccc; --ink-muted-48: #7a7a7a;
+            --canvas: #1c1c1e; --canvas-parchment: #2c2c2e;
+            --surface-tile-1: #272729; --surface-tile-2: #2a2a2c; --surface-tile-3: #252527;
+            --surface-black: #000; --surface-chip: #3a3a3c;
+            --divider-soft: #38383a; --hairline: #48484a;
+            --success: #30d158; --warning: #ff9f0a; --danger: #ff453a;
+            --accent: var(--primary); --accent-hover: var(--primary-hover);
+            --bg-primary: #000; --bg-secondary: var(--canvas);
+            --bg-card: var(--canvas); --bg-tab: var(--canvas-parchment);
+            --border: var(--hairline); --border-soft: var(--divider-soft);
+            --text-primary: var(--ink); --text-secondary: var(--ink-muted-48);
+            --text-muted: #555; --input-bg: var(--canvas-parchment);
+            --msg-self: #1a2a4a; --msg-other: var(--surface-tile-2);
+            --tab-bar-bg: rgba(44,44,46,0.92); --tab-bar-height: 50px;
+            --toast-bg: rgba(0,0,0,0.88); --nav-bg: var(--surface-black);
+            --nav-text: #fff; --surface-raised: var(--surface-tile-2);
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        html,body{height:100%;overflow:hidden}
+        body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Arial,"Noto Sans SC",sans-serif;background:var(--bg-primary);color:var(--text-primary);-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+        .app{display:flex;flex-direction:column;height:100vh;max-width:100vw;overflow:hidden}
+        .global-nav{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;height:44px;padding:0 16px;background:var(--nav-bg);color:var(--nav-text);z-index:20;user-select:none}
+        .global-nav .nav-left{display:flex;align-items:center;gap:8px}
+        .global-nav .nav-title{font-size:12px;font-weight:400;letter-spacing:-0.12px;line-height:1;opacity:.92}
+        .global-nav .nav-right{display:flex;align-items:center;gap:12px}
+        .nav-status{display:flex;align-items:center;gap:6px}
+        #statusText{font-size:12px;font-weight:400;letter-spacing:-0.12px;line-height:1;opacity:.85}
+        .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--danger);flex-shrink:0;transition:background .3s}
+        .status-dot.connected{background:var(--success)}
+        .theme-toggle{background:none;border:none;color:var(--nav-text);font-size:16px;cursor:pointer;padding:4px;line-height:1;opacity:.7;transition:opacity .15s}
+        .theme-toggle:hover{opacity:1}.theme-toggle:active{transform:scale(.9)}
+        .content{flex:1;overflow:hidden;position:relative}
+        .tab-page{display:none;height:100%;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch}
+        .tab-page.active{display:block}
+        .tab-bar{flex-shrink:0;display:flex;background:var(--tab-bar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border-soft);height:var(--tab-bar-height);z-index:20;padding-bottom:env(safe-area-inset-bottom,0)}
+        .tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 0 2px;cursor:pointer;color:var(--ink-muted-48);transition:color .15s;border:none;background:transparent;font-size:10px;font-weight:400;letter-spacing:-0.08px;line-height:1;user-select:none;position:relative}
+        .tab-item .tab-icon{font-size:20px;line-height:1}
+        .tab-item.active{color:var(--accent)}.tab-item:active{opacity:.6}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border:none;border-radius:9999px;font-size:14px;font-weight:400;line-height:1.29;letter-spacing:-0.224px;cursor:pointer;transition:all .15s;user-select:none;white-space:nowrap}
+        .btn:active{transform:scale(.95)}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+        .btn-primary{background:var(--primary);color:#fff}
+        .btn-primary:hover:not(:disabled){background:var(--primary-hover)}
+        .btn-success{background:var(--success);color:#fff}
+        .btn-danger{background:var(--danger);color:#fff}
+        .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-primary)}
+        .btn-outline:hover:not(:disabled){border-color:var(--primary);color:var(--primary)}
+        .btn-small{padding:5px 14px;font-size:12px;letter-spacing:-0.12px}
+        .btn-block{width:100%;justify-content:center}
+        .action-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+        .message-log{display:flex;flex-direction:column;gap:6px;padding-bottom:8px}
+        .message-entry{padding:10px 14px;border-radius:11px;font-size:14px;line-height:1.47;letter-spacing:-0.224px;max-width:88%;word-break:break-word;border:1px solid var(--border-soft)}
+        .message-entry.other{background:var(--msg-other);align-self:flex-start;border-bottom-left-radius:4px}
+        .message-entry.self{background:var(--msg-self);align-self:flex-end;border-bottom-right-radius:4px}
+        .message-entry .msg-meta{font-size:11px;color:var(--ink-muted-48);margin-bottom:3px;letter-spacing:-0.08px}
+        .message-entry .msg-sender{color:var(--accent);font-weight:600}
+        .message-entry .msg-time{float:right;margin-left:8px}
+        .message-entry .msg-index{font-size:11px;color:var(--ink-muted-48);margin-right:6px;font-family:monospace;letter-spacing:-0.08px}
+        .empty-state{text-align:center;color:var(--ink-muted-48);padding:48px 20px;font-size:14px;line-height:1.47;letter-spacing:-0.224px}
+        .form-group{margin-bottom:14px}
+        .form-label{display:block;font-size:13px;font-weight:400;color:var(--ink-muted-48);margin-bottom:5px;letter-spacing:-0.12px}
+        .form-input{width:100%;padding:10px 14px;background:var(--input-bg);border:1px solid var(--border);border-radius:11px;color:var(--text-primary);font-size:14px;font-weight:400;line-height:1.43;letter-spacing:-0.224px;outline:none;transition:border-color .15s,background .3s}
+        .form-input:focus{border-color:var(--accent)}
+        .form-input::placeholder{color:var(--ink-muted-48);opacity:.6}
+        textarea.form-input{min-height:80px;resize:vertical;font-family:inherit}
+        select.form-input{appearance:auto}
+        .file-input-wrapper{position:relative;width:100%}
+        .file-input-wrapper input[type="file"]{position:absolute;top:0;left:0;opacity:0;width:100%;height:100%;cursor:pointer}
+        .file-input-label{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--input-bg);border:1px solid var(--border);border-radius:11px;color:var(--ink-muted-48);font-size:14px;letter-spacing:-0.224px;cursor:pointer;transition:all .15s}
+        .file-input-label:hover{border-color:var(--accent)}
+        .file-input-label.has-file{color:var(--text-primary)}
+        .file-input-label .file-icon{font-size:18px}
+        .file-input-label .file-name{flex:1;margin:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .file-preview{margin-top:8px;display:none}
+        .file-preview.visible{display:block}
+        .file-preview-image{max-width:100%;max-height:200px;border-radius:11px;border:1px solid var(--border)}
+        .file-info{margin-top:8px;font-size:12px;color:var(--ink-muted-48);letter-spacing:-0.12px}
+        .file-size{display:inline-block;margin-right:10px}.file-type{display:inline-block}
+        .mode-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+        .chip{padding:6px 14px;border:1px solid var(--border);border-radius:9999px;font-size:12px;font-weight:400;letter-spacing:-0.12px;line-height:1.29;cursor:pointer;background:transparent;color:var(--ink-muted-48);transition:all .15s;user-select:none}
+        .chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+        .chip:active{transform:scale(.95)}
+        .sticker-search,.member-search,.user-search{margin-bottom:12px}
+        .sticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding-bottom:8px}
+        .sticker-item{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-card);border:2px solid transparent;border-radius:18px;cursor:pointer;font-size:12px;text-align:center;padding:8px 4px;transition:all .15s;word-break:break-all;line-height:1.3;letter-spacing:-0.12px;color:var(--text-primary)}
+        .sticker-item:active{transform:scale(.95)}
+        .sticker-item.selected{border-color:var(--accent);background:var(--msg-self)}
+        .sticker-item .sticker-emoji{font-size:28px;display:block;margin-bottom:4px}
+        .sticker-text-row{display:flex;gap:8px;margin-top:8px}
+        .sticker-text-row .form-input{flex:1}.sticker-text-row .btn{flex-shrink:0}
+        .sticker-actions,.reply-actions,.image-actions,.file-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+        .latex-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+        .latex-control-group{display:flex;flex-direction:column;gap:4px}
+        .latex-control-label{font-size:12px;color:var(--ink-muted-48);display:flex;justify-content:space-between;letter-spacing:-0.12px}
+        .latex-control-value{font-size:11px;color:var(--accent);letter-spacing:-0.08px}
+        .latex-slider{width:100%;height:4px;border-radius:2px;background:var(--input-bg);outline:none;appearance:none}
+        .latex-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:none}
+        .latex-select{width:100%;padding:6px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:12px;letter-spacing:-0.12px;outline:none}
+        .latex-checkbox-group{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-muted-48);letter-spacing:-0.12px}
+        .latex-checkbox{width:16px;height:16px;accent-color:var(--accent)}
+        .latex-preview-container{margin:12px 0;padding:14px;background:var(--bg-card);border-radius:11px;border:1px solid var(--border)}
+        .latex-preview-title{font-size:12px;color:var(--ink-muted-48);margin-bottom:6px;letter-spacing:-0.12px}
+        .latex-preview-box{min-height:56px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:var(--accent);background:var(--input-bg);border-radius:8px;padding:10px;text-align:center;overflow:hidden}
+        .latex-code-container{margin:12px 0}
+        .latex-code-box{width:100%;min-height:56px;padding:10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Courier New',monospace;font-size:12px;line-height:1.5;resize:vertical;overflow-y:auto}
+        .latex-list-container{margin:12px 0;max-height:200px;overflow-y:auto}
+        .latex-list-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px}
+        .latex-list-content{flex:1;font-family:'Courier New',monospace;font-size:12px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .latex-list-actions{display:flex;gap:4px;flex-shrink:0}.latex-action-buttons{display:flex;gap:8px;margin-top:12px}
+        .member-list,.user-list{display:flex;flex-direction:column;gap:2px}
+        .member-item,.user-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;background:var(--bg-card);border:1px solid var(--border-soft);font-size:14px;letter-spacing:-0.224px}
+        .member-item .member-avatar,.user-item .user-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0}
+        .member-item .member-info,.user-item .user-info{flex:1;min-width:0}
+        .member-item .member-name,.user-item .user-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .member-item .member-id,.user-item .user-id{font-size:11px;color:var(--ink-muted-48);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.08px}
+        .settings-section{margin-bottom:24px}
+        .settings-section h3{font-size:15px;font-weight:600;color:var(--text-primary);letter-spacing:-0.224px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border-soft)}
+        .setting-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;font-size:14px;letter-spacing:-0.224px}
+        .setting-row .setting-label{font-size:14px;flex-shrink:0}
+        .setting-row .form-input{max-width:200px}
+        .setting-row.setting-toggle{padding:8px 0}
+        .toggle{position:relative;width:48px;height:28px;flex-shrink:0}
+        .toggle input{opacity:0;width:0;height:0}
+        .toggle .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--hairline);transition:.3s;border-radius:28px}
+        .toggle .slider::before{content:"";position:absolute;height:22px;width:22px;left:3px;bottom:3px;background:#fff;transition:.3s;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+        .toggle input:checked+.slider{background:var(--primary)}
+        .toggle input:checked+.slider::before{transform:translateX(20px)}
+        .toast-container{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:90vw}
+        .toast{background:var(--toast-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;padding:10px 20px;border-radius:9999px;font-size:13px;font-weight:400;letter-spacing:-0.12px;line-height:1.29;animation:toastIn .3s ease;pointer-events:auto;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+        .toast.error{background:rgba(255,69,58,0.92)}
+        .toast.success{background:rgba(48,209,88,0.92)}
+        .toast.warning{background:rgba(255,159,10,0.92)}
+        @keyframes toastIn{from{opacity:0;transform:translateY(-12px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+        .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--ink-muted-48);border-top:2px solid var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+        .spinner-lg{width:24px;height:24px;border-width:3px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .loading-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.3);z-index:100;align-items:center;justify-content:center}
+        .loading-overlay.active{display:flex}
+        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--hairline);border-radius:2px}
+        @media(max-width:480px){.tab-item .tab-icon{font-size:18px}.sticker-grid{grid-template-columns:repeat(3,1fr);gap:6px}.sticker-item{font-size:11px;padding:6px 2px}.sticker-item .sticker-emoji{font-size:24px}.latex-controls{grid-template-columns:1fr}.tab-page{padding:12px}}
+        @media(min-width:768px){.tab-page{padding:24px;max-width:720px;margin:0 auto}}
+        @media(min-width:1068px){.tab-page{max-width:880px}}
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <nav class="global-nav">
+        <div class="nav-left">
+            <span class="nav-title">🤖 元宝 Bot v3.0</span>
+        </div>
+        <div class="nav-right">
+            <button class="theme-toggle" id="themeToggle" title="切换外观" onclick="toggleTheme()">☀️</button>
+            <div class="nav-status">
+                <span id="statusText">未连接</span>
+                <span class="status-dot" id="statusDot"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content" id="content">
+        <!-- 消息面板 -->
+        <div class="tab-page active" id="tab-messages">
+            <div class="action-row">
+                <button class="btn btn-success btn-small" id="btnConnect" onclick="connect()">🔗 连接</button>
+                <button class="btn btn-danger btn-small" id="btnDisconnect" onclick="disconnect()" disabled>🔌 断开</button>
+                <button class="btn btn-outline btn-small" onclick="loadRecentMessages()">🔄 刷新</button>
+                <button class="btn btn-outline btn-small" onclick="clearMessages()">🗑️ 清空</button>
+            </div>
+            <div class="action-row">
+                <div class="form-group" style="flex: 1;">
+                    <input type="text" class="form-input" id="searchMessage" placeholder="🔍 搜索消息..." oninput="filterMessages()">
+                </div>
+                <select class="form-input" style="width: 120px;" id="msgLimit" onchange="loadRecentMessages()">
+                    <option value="20">最近20条</option>
+                    <option value="50" selected>最近50条</option>
+                    <option value="100">最近100条</option>
+                </select>
+            </div>
+            <div id="messageLog" class="message-log">
+                <div class="empty-state">暂无消息<br><small>连接后消息会自动显示在这里</small></div>
+            </div>
+        </div>
+
+        <!-- 发送面板 -->
+        <div class="tab-page" id="tab-send">
+            <div class="mode-chips" id="modeChips">
+                <button class="chip active" data-mode="normal" onclick="setMode('normal')">💬 普通</button>
+                <button class="chip" data-mode="at" onclick="setMode('at')">@ 艾特</button>
+                <button class="chip" data-mode="spam" onclick="setMode('spam')">🔁 刷屏</button>
+                <button class="chip" data-mode="atspam" onclick="setMode('atspam')">@🔁 艾特刷屏</button>
+                <button class="chip" data-mode="multi-at" onclick="setMode('multi-at')">👥 批量@</button>
+                <button class="chip" data-mode="dm" onclick="setMode('dm')">✉️ 私聊</button>
+                <button class="chip" data-mode="dmspam" onclick="setMode('dmspam')">📨 私聊刷屏</button>
+                <button class="chip" data-mode="latex" onclick="setMode('latex')">LaTeX 消息</button>
+                <button class="chip" data-mode="latex-spam" onclick="setMode('latex-spam')">LaTeX 刷屏</button>
+            </div>
+
+            <div class="form-group" id="targetRow" style="display:none">
+                <label class="form-label" id="targetLabel">目标用户</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" class="form-input" id="inputTargetId" placeholder="用户ID" style="flex: 2;">
+                    <input type="text" class="form-input" id="inputTargetNick" placeholder="昵称（可选）" style="flex: 1; display: none;">
+                </div>
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 4px;" id="targetHint"></small>
+            </div>
+
+            <div class="form-group" id="countRow" style="display:none">
+                <div class="setting-row">
+                    <span class="setting-label">刷屏次数</span>
+                    <input type="number" class="form-input" id="inputCount" value="5" min="1" style="max-width: 120px;">
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">间隔(秒)</span>
+                    <input type="number" class="form-input" id="inputInterval" value="0.1" min="0.01" step="0.1" style="max-width: 120px;">
+                </div>
+            </div>
+
+            <div class="form-group" id="latexControls" style="display:none">
+                <h3>LaTeX 消息编辑器</h3>
+                <div class="form-group">
+                    <label class="form-label">输入文本</label>
+                    <input type="text" class="form-input" id="latexText" value="测试">
+                </div>
+                <div class="latex-controls">
+                    <div class="latex-control-group">
+                        <label class="latex-control-label"><span>缩放倍数</span><span class="latex-control-value" id="scaleValue">3.0</span></label>
+                        <input type="range" class="latex-slider" id="scaleSlider" min="0.1" max="100" step="0.1" value="3.0">
+                    </div>
+                    <div class="latex-control-group">
+                        <label class="latex-control-label"><span>旋转角度</span><span class="latex-control-value" id="rotateValue">15°</span></label>
+                        <input type="range" class="latex-slider" id="rotateSlider" min="-180" max="180" step="1" value="15">
+                    </div>
+                    <div class="latex-control-group">
+                        <label class="latex-control-label"><span>字体样式</span><span class="latex-control-value" id="fontStyleValue">常规</span></label>
+                        <select class="latex-select" id="fontStyleSelect">
+                            <option value="normal">常规</option>
+                            <option value="bold">粗体</option>
+                            <option value="italic">斜体</option>
+                            <option value="bold-italic">粗斜体</option>
+                        </select>
+                    </div>
+                    <div class="latex-control-group">
+                        <label class="latex-control-label"><span>水平缩放</span><span class="latex-control-value" id="hScaleValue">1.0</span></label>
+                        <input type="range" class="latex-slider" id="hScaleSlider" min="0.1" max="5" step="0.1" value="1.0">
+                    </div>
+                    <div class="latex-control-group">
+                        <label class="latex-control-label"><span>垂直缩放</span><span class="latex-control-value" id="vScaleValue">1.0</span></label>
+                        <input type="range" class="latex-slider" id="vScaleSlider" min="0.1" max="5" step="0.1" value="1.0">
+                    </div>
+                    <div class="latex-control-group">
+                        <div class="latex-checkbox-group">
+                            <input type="checkbox" class="latex-checkbox" id="borderCheckbox">
+                            <label for="borderCheckbox">添加边框</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="latex-preview-container">
+                    <div class="latex-preview-title">实时预览</div>
+                    <div class="latex-preview-box" id="latexPreview"></div>
+                </div>
+                <div class="latex-code-container">
+                    <div class="latex-preview-title">生成的LaTeX代码</div>
+                    <textarea class="latex-code-box" id="latexCode" readonly rows="3"></textarea>
+                </div>
+                <div class="latex-action-buttons">
+                    <button class="btn btn-success btn-small" onclick="addToLatexList()">添加到消息列表</button>
+                    <button class="btn btn-outline btn-small" onclick="clearLatexSettings()">重置设置</button>
+                </div>
+                <div class="latex-list-container" id="latexListContainer" style="display:none">
+                    <div class="latex-preview-title">消息列表</div>
+                    <div id="latexList"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">消息内容</label>
+                <textarea class="form-input" id="inputMessage" placeholder="输入要发送的消息..." rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary btn-block" id="btnSend" onclick="sendMessage()">📤 发送</button>
+        </div>
+
+        <!-- 贴纸面板 -->
+        <div class="tab-page" id="tab-stickers">
+            <input type="text" class="form-input sticker-search" id="stickerSearch" placeholder="🔍 搜索贴纸..." oninput="filterStickers()">
+            <div class="sticker-grid" id="stickerGrid"></div>
+            <div class="sticker-text-row">
+                <input type="text" class="form-input" id="stickerText" placeholder="附加文本（可选）">
+                <input type="text" class="form-input" id="stickerAtUser" placeholder="@ 用户ID（可选）" style="flex: 0.7;">
+                <input type="text" class="form-input" id="stickerAtNick" placeholder="昵称（可选）" style="flex: 0.7;">
+            </div>
+            <div class="sticker-actions">
+                <div class="setting-row" style="flex: 1;">
+                    <span class="setting-label">刷屏次数</span>
+                    <input type="number" class="form-input" id="stickerCount" value="1" min="1" style="max-width: 80px;">
+                </div>
+                <div class="setting-row" style="flex: 1;">
+                    <span class="setting-label">间隔(秒)</span>
+                    <input type="number" class="form-input" id="stickerInterval" value="0.1" min="0.01" step="0.1" style="max-width: 80px;">
+                </div>
+                <button class="btn btn-primary" id="btnSendSticker" onclick="sendSticker()">发送贴纸</button>
+            </div>
+        </div>
+
+        <!-- 成员面板 -->
+        <div class="tab-page" id="tab-members">
+            <div class="action-row">
+                <input type="text" class="form-input" style="flex:1" id="memberSearch" placeholder="🔍 搜索成员..." oninput="filterMembers()">
+                <button class="btn btn-primary btn-small" onclick="loadMembers()">🔄 刷新</button>
+            </div>
+            <div class="member-list" id="memberList"><div class="empty-state">点击刷新获取群成员</div></div>
+        </div>
+
+        <!-- 用户面板 -->
+        <div class="tab-page" id="tab-users">
+            <div class="settings-section">
+                <h3>👥 用户管理</h3>
+                <div class="form-group">
+                    <label class="form-label">添加/更新用户</label>
+                    <div class="action-row">
+                        <input type="text" class="form-input" id="addUserId" placeholder="用户ID" style="flex: 1;">
+                        <input type="text" class="form-input" id="addUserNick" placeholder="昵称" style="flex: 1;">
+                        <button class="btn btn-success btn-small" onclick="addUser()">添加</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="action-row">
+                        <input type="text" class="form-input user-search" id="userSearch" placeholder="🔍 搜索用户..." oninput="filterUsers()" style="flex: 1;">
+                        <button class="btn btn-outline btn-small" onclick="loadUsers()">刷新列表</button>
+                    </div>
+                </div>
+                <div class="user-list" id="userList"><div class="empty-state">暂无保存的用户</div></div>
+            </div>
+        </div>
+
+        <!-- 高级面板 -->
+        <div class="tab-page" id="tab-advanced">
+            <div class="settings-section">
+                <h3>🔄 引用回复</h3>
+                <div class="form-group">
+                    <label class="form-label">消息序号</label>
+                    <input type="number" class="form-input" id="replyIndex" placeholder="消息序号" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">回复内容</label>
+                    <textarea class="form-input" id="replyText" placeholder="输入回复内容..." rows="2"></textarea>
+                </div>
+                <div class="reply-actions">
+                    <input type="text" class="form-input" id="replyAtUser" placeholder="@ 用户ID（可选）" style="flex: 1;">
+                    <input type="text" class="form-input" id="replyAtNick" placeholder="昵称（可选）" style="flex: 0.6;">
+                    <div class="setting-row" style="flex: 1;">
+                        <span class="setting-label">刷屏次数</span>
+                        <input type="number" class="form-input" id="replyCount" value="1" min="1" style="max-width: 80px;">
+                    </div>
+                    <button class="btn btn-primary" onclick="sendReply()">发送回复</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>🖼️ 发送图片</h3>
+                <div class="form-group">
+                    <label class="form-label">选择图片文件</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="imageFile" accept=".jpg,.jpeg,.png,.gif,.bmp,.webp" style="display:none" onchange="handleImageFileSelect(event)">
+                        <label for="imageFile" class="file-input-label" id="imageFileLabel">
+                            <span class="file-icon">📁</span>
+                            <span class="file-name">点击选择图片文件...</span>
+                            <button class="btn btn-outline btn-small" onclick="event.preventDefault();document.getElementById('imageFile').click()">选择文件</button>
+                        </label>
+                    </div>
+                </div>
+                <div class="file-preview" id="imagePreview">
+                    <img id="imagePreviewImg" class="file-preview-image" alt="预览">
+                    <div class="file-info">
+                        <span class="file-size" id="imageFileSize"></span>
+                        <span class="file-type" id="imageFileType"></span>
+                    </div>
+                </div>
+                <div class="image-actions">
+                    <input type="text" class="form-input" id="imageAtUser" placeholder="@ 用户ID（可选）" style="flex: 1;">
+                    <input type="text" class="form-input" id="imageAtNick" placeholder="昵称（可选）" style="flex: 0.6;">
+                    <button class="btn btn-primary" id="btnSendImage" onclick="sendImage()">发送图片</button>
+                </div>
+                <small style="color:var(--text-muted);display:block;margin-top:4px">支持: JPG/PNG/GIF/BMP/WebP (最大20MB)</small>
+            </div>
+
+            <div class="settings-section">
+                <h3>📁 发送文件</h3>
+                <div class="form-group">
+                    <label class="form-label">选择文件</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="documentFile" style="display:none" onchange="handleFileSelect(event)">
+                        <label for="documentFile" class="file-input-label" id="documentFileLabel">
+                            <span class="file-icon">📁</span>
+                            <span class="file-name">点击选择文件...</span>
+                            <button class="btn btn-outline btn-small" onclick="event.preventDefault();document.getElementById('documentFile').click()">选择文件</button>
+                        </label>
+                    </div>
+                </div>
+                <div class="file-info" id="fileInfo" style="display:none">
+                    <span class="file-size" id="fileSize"></span>
+                    <span class="file-type" id="fileType"></span>
+                </div>
+                <div class="file-actions">
+                    <input type="text" class="form-input" id="fileAtUser" placeholder="@ 用户ID（可选）" style="flex: 1;">
+                    <input type="text" class="form-input" id="fileAtNick" placeholder="昵称（可选）" style="flex: 0.6;">
+                    <button class="btn btn-primary" id="btnSendFile" onclick="sendFile()">发送文件</button>
+                </div>
+                <small style="color:var(--text-muted);display:block;margin-top:4px">支持任意文件类型 (最大20MB)</small>
+            </div>
+
+            <div class="settings-section">
+                <h3>⚠️ 艾特全体</h3>
+                <div class="form-group">
+                    <textarea class="form-input" id="atAllText" placeholder="输入消息..." rows="2"></textarea>
+                </div>
+                <button class="btn btn-danger btn-block" onclick="sendAtAll()">🚨 艾特全体成员</button>
+            </div>
+        </div>
+
+        <!-- 设置面板 -->
+        <div class="tab-page" id="tab-settings">
+            <div class="settings-section">
+                <h3>🔗 连接设置</h3>
+                <div class="setting-row">
+                    <span class="setting-label">群号</span>
+                    <input type="text" class="form-input" id="settingGroupCode" placeholder="群号">
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">刷屏间隔(秒)</span>
+                    <input type="number" class="form-input" id="settingInterval" step="0.1" min="0" value="0.1" style="max-width:100px">
+                </div>
+                <div class="setting-row setting-toggle">
+                    <span class="setting-label">🌐 打开网页自动连接</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="settingAutoConnect" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>👥 多群聊管理</h3>
+                <div class="form-group">
+                    <label class="form-label">已监听的群聊</label>
+                    <div id="groupsList" class="member-list" style="max-height:200px;overflow-y:auto">
+                        <div class="empty-state">暂无群聊数据</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">切换当前操作群聊</label>
+                    <div class="action-row">
+                        <select class="form-input" id="groupSelector" style="flex:1">
+                            <option value="">请选择群聊</option>
+                        </select>
+                        <button class="btn btn-primary btn-small" onclick="switchGroup()">切换</button>
+                    </div>
+                </div>
+                <div class="action-row">
+                    <button class="btn btn-outline btn-small" onclick="loadGroups()">刷新群聊列表</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>💓 心跳循环设置</h3>
+                <div class="setting-row">
+                    <span class="setting-label">心跳间隔(秒)</span>
+                    <input type="number" class="form-input" id="settingHeartbeatInterval" step="0.5" min="0.5" max="60" value="1.0" style="max-width:100px">
+                </div>
+                <button class="btn btn-primary btn-small" onclick="setHeartbeatInterval()">设置心跳间隔</button>
+            </div>
+
+            <div class="settings-section">
+                <h3>🔁 代理模式（双模式 v3.0）</h3>
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
+                    📌 <strong>@元宝模式</strong>：源群消息 → 转发到中转群@元宝 → 等回复 → 回原群<br>
+                    ⚡ <strong>直转模式</strong>（关闭@元宝）：源群消息 → 直接转发到中转群，不等回复，实时完成
+                </p>
+                <div class="setting-row setting-toggle">
+                    <span class="setting-label">启用代理模式</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="settingForwardMode" onchange="onForwardModeToggle(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row setting-toggle">
+                    <span class="setting-label">仅被艾特时触发</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="settingForwardAtOnly" onchange="updateForwardAtOnly(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row setting-toggle">
+                    <span class="setting-label">🔔 @元宝（转发时）</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="settingForwardAtYuanbao" checked onchange="updateForwardAtYuanbao(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <small style="color:var(--text-muted);font-size:11px">开启 = @元宝模式（等回复回原群） | 关闭 = 直转模式（实时转发不等回复）</small>
+
+                <div style="background:var(--bg-card);border-radius:8px;padding:10px;margin:10px 0;font-size:13px;color:var(--text-secondary);line-height:1.6">
+                    <div>📋 工作流程（随开关自动切换）：</div>
+                    <div id="workflowDesc">
+                        <div><strong>①</strong> 源群消息 → 实时转发到中转群@元宝</div>
+                        <div><strong>②</strong> 元宝回复 → 自动转发回原群</div>
+                    </div>
+                    <div>• 支持文本/贴纸/图片/文件</div>
+                </div>
+
+                <div class="action-row">
+                    <button class="btn btn-success btn-small" onclick="enableForwardMode()">✅ 启用</button>
+                    <button class="btn btn-danger btn-small" onclick="disableForwardMode()">⛔ 禁用</button>
+                    <button class="btn btn-outline btn-small" onclick="getForwardModeConfig()">🔄 状态</button>
+                    <button class="btn btn-outline btn-small" onclick="clearForwardQueue()">🗑️ 清队列</button>
+                </div>
+
+                <div id="forwardModeStatus" style="display:none;margin-top:10px;padding:10px;background:var(--bg-card);border-radius:8px">
+                    <div id="forwardModeStatusText"></div>
+                </div>
+                <div id="proxyQueuePanel" style="display:none;margin-top:10px;padding:10px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border-soft)"></div>
+            </div>
+
+            <div class="settings-section">
+                <h3>🤖 自动回复</h3>
+                <div class="setting-row setting-toggle">
+                    <span class="setting-label">启用自动回复</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="settingAutoReply" onchange="onAutoReplyToggle(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">群聊默认回复</label>
+                    <input type="text" class="form-input" id="settingGroupReply" placeholder="群聊回复文本">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">私聊默认回复</label>
+                    <input type="text" class="form-input" id="settingC2cReply" placeholder="私聊回复文本">
+                </div>
+                <div class="action-row">
+                    <button class="btn btn-primary btn-small" onclick="testAutoReply()">测试</button>
+                    <button class="btn btn-success btn-small" id="btnEnableAutoReply" onclick="enableAutoReply()" style="display:none">启用</button>
+                    <button class="btn btn-danger btn-small" id="btnDisableAutoReply" onclick="disableAutoReply()" style="display:none">禁用</button>
+                </div>
+                <div class="action-row">
+                    <button class="btn btn-success btn-small" onclick="addAutoReplyRule()">➕ 添加规则</button>
+                    <button class="btn btn-primary btn-small" onclick="loadAutoReplyRules()">🔄 刷新规则</button>
+                </div>
+                <div id="autoReplyTestResult" style="display:none;margin-top:10px;padding:10px;background:var(--bg-card);border-radius:8px">
+                    <div id="autoReplyTestText"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>💓 系统状态</h3>
+                <div class="setting-row"><span>连接状态</span><span id="connectionStatusText" style="color:var(--danger);font-size:12px">未连接</span></div>
+                <div class="setting-row"><span>心跳循环</span><span id="heartbeatStatusText" style="color:var(--warning);font-size:12px">未启动</span></div>
+                <div class="setting-row"><span>接收循环</span><span id="receiveLoopStatusText" style="color:var(--warning);font-size:12px">未启动</span></div>
+                <div class="setting-row"><span>自动回复</span><span id="autoReplyStatusText" style="color:var(--warning);font-size:12px">未启用</span></div>
+                <div class="setting-row"><span>代理模式</span><span id="forwardModeStatusTextSmall" style="color:var(--warning);font-size:12px">未启用</span></div>
+                <div class="setting-row"><span>@元宝</span><span id="atYuanbaoStatusText" style="color:var(--warning);font-size:12px">未启用</span></div>
+                <div class="action-row" style="margin-top:10px">
+                    <button class="btn btn-outline btn-small" onclick="checkHeartbeat()">检测心跳</button>
+                    <button class="btn btn-outline btn-small" onclick="getAutoReplyStatus()">自动回复状态</button>
+                    <button class="btn btn-outline btn-small" onclick="getForwardModeConfig()">桥接状态</button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="saveSettings()">💾 保存设置</button>
+        </div>
+    </div>
+
+    <nav class="tab-bar">
+        <button class="tab-item active" data-tab="tab-messages" onclick="switchTab('tab-messages')"><span class="tab-icon">💬</span><span>消息</span></button>
+        <button class="tab-item" data-tab="tab-send" onclick="switchTab('tab-send')"><span class="tab-icon">📤</span><span>发送</span></button>
+        <button class="tab-item" data-tab="tab-stickers" onclick="switchTab('tab-stickers')"><span class="tab-icon">😀</span><span>贴纸</span></button>
+        <button class="tab-item" data-tab="tab-members" onclick="switchTab('tab-members')"><span class="tab-icon">👥</span><span>成员</span></button>
+        <button class="tab-item" data-tab="tab-users" onclick="switchTab('tab-users')"><span class="tab-icon">📇</span><span>用户</span></button>
+        <button class="tab-item" data-tab="tab-advanced" onclick="switchTab('tab-advanced')"><span class="tab-icon">⚡</span><span>高级</span></button>
+        <button class="tab-item" data-tab="tab-settings" onclick="switchTab('tab-settings')"><span class="tab-icon">⚙️</span><span>设置</span></button>
+    </nav>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  全局状态
+// ═══════════════════════════════════════════
+const API_BASE = '';
+let currentMode = 'normal';
+let selectedSticker = null;
+let messageCount = 0;
+let isConnected = false;
+let stickerData = [];
+let allMembers = [];
+let allUsers = [];
+let autoReplyEnabled = false;
+let heartbeatRunning = false;
+let receiveLoopRunning = false;
+let autoReplyRules = [];
+
+// 代理模式
+let forwardModeEnabled = false;
+let forwardQueueLength = 0;
+let forwardProcessing = false;
+let forwardAtYuanbao = true;
+
+// 自动连接
+let autoConnectEnabled = true;
+
+// 文件
+let selectedImageFile = null;
+let selectedDocumentFile = null;
+
+// LaTeX
+let latexItems = [];
+let latexSettings = { text:'0', scale:3.0, rotate:15, fontStyle:'normal', hScale:1.0, vScale:1.0, border:false };
+
+// SSE
+let sseConnection = null;
+let sseReconnectTimer = null;
+let sseRetryCount = 0;
+const SSE_MAX_RETRY = 8;
+const SSE_RETRY_DELAY = 3000;
+
+// ═══════════════════════════════════════════
+//  工具函数
+// ═══════════════════════════════════════════
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text || '';
+    return d.innerHTML;
+}
+
+function showToast(msg, type='info', duration=3000) {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(-10px)';
+        t.style.transition = '0.3s';
+        setTimeout(() => t.remove(), 300);
+    }, duration);
+}
+
+async function api(endpoint, options={}) {
+    const url = `${API_BASE}${endpoint}`;
+    const config = { ...options };
+    if (!(options.body instanceof FormData)) {
+        config.headers = { 'Content-Type': 'application/json', ...options.headers };
+        if (options.body && typeof options.body !== 'string') {
+            config.body = JSON.stringify(options.body);
+        }
+    }
+    try {
+        const res = await fetch(url, config);
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); }
+        catch { showToast(`服务器错误 (${res.status})`, 'error'); throw new Error(text.substring(0,100)); }
+        if (!res.ok && data.message) showToast(data.message, 'error');
+        return data;
+    } catch(e) {
+        if (!e.message.startsWith('返回非')) showToast('请求失败: ' + e.message, 'error');
+        throw e;
+    }
+}
+
+// ═══════════════════════════════════════════
+//  主题
+// ═══════════════════════════════════════════
+function toggleTheme() {
+    const html = document.documentElement;
+    const cur = html.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('opencode-theme', next);
+    document.getElementById('themeToggle').textContent = next === 'dark' ? '🌙' : '☀️';
+}
+(function initTheme(){
+    const saved = localStorage.getItem('opencode-theme');
+    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (dark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+    const btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+})();
+
+// ═══════════════════════════════════════════
+//  标签切换
+// ═══════════════════════════════════════════
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    const tab = document.querySelector(`.tab-item[data-tab="${tabId}"]`);
+    if (tab) tab.classList.add('active');
+
+    if (tabId === 'tab-stickers') loadStickers();
+    if (tabId === 'tab-members') loadMembers();
+    if (tabId === 'tab-users') loadUsers();
+    if (tabId === 'tab-settings') {
+        loadSettings();
+        updateStatusDisplay();
+        getAutoReplyStatus();
+        loadGroups();
+        getForwardModeConfig();
+    }
+}
+
+// ═══════════════════════════════════════════
+//  状态更新
+// ═══════════════════════════════════════════
+async function updateStatus() {
+    try {
+        const d = await api('/api/status');
+        isConnected = d.connected;
+        const dot = document.getElementById('statusDot');
+        const txt = document.getElementById('statusText');
+        if (d.connected) {
+            dot.classList.add('connected');
+            txt.textContent = `已连接 (${d.bot_id})`;
+            txt.style.color = 'var(--success)';
+            document.getElementById('btnConnect').disabled = true;
+            document.getElementById('btnDisconnect').disabled = false;
+        } else {
+            dot.classList.remove('connected');
+            txt.textContent = '未连接';
+            txt.style.color = 'var(--danger)';
+            document.getElementById('btnConnect').disabled = false;
+            document.getElementById('btnDisconnect').disabled = true;
+        }
+        if (d.forward_mode_enabled !== undefined) {
+            forwardModeEnabled = d.forward_mode_enabled;
+            forwardQueueLength = d.forward_queue_length || 0;
+            forwardProcessing = d.worker_running || false;
+        }
+        if (d.forward_at_yuanbao !== undefined) forwardAtYuanbao = d.forward_at_yuanbao;
+        updateStatusDisplay();
+    } catch(e) { console.warn('状态更新失败:', e); }
+}
+
+function updateStatusDisplay() {
+    const setText = (id, text, color) => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = text; el.style.color = color; }
+    };
+    if (isConnected) {
+        setText('connectionStatusText', '已连接', 'var(--success)');
+        setText('heartbeatStatusText', '运行中', 'var(--success)');
+        setText('receiveLoopStatusText', '运行中', 'var(--success)');
+    } else {
+        setText('connectionStatusText', '未连接', 'var(--danger)');
+        setText('heartbeatStatusText', '未启动', 'var(--warning)');
+        setText('receiveLoopStatusText', '未启动', 'var(--warning)');
+    }
+    setText('autoReplyStatusText', autoReplyEnabled ? '已启用' : '未启用', autoReplyEnabled ? 'var(--success)' : 'var(--warning)');
+    setText('forwardModeStatusTextSmall', forwardModeEnabled ? '已启用' : '未启用', forwardModeEnabled ? 'var(--success)' : 'var(--warning)');
+    setText('atYuanbaoStatusText', forwardAtYuanbao ? '已开启' : '已关闭', forwardAtYuanbao ? 'var(--success)' : 'var(--warning)');
+}
+
+// ═══════════════════════════════════════════
+//  连接
+// ═══════════════════════════════════════════
+async function connect() {
+    const btn = document.getElementById('btnConnect');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> 连接中...';
+    try {
+        const d = await api('/api/connect', { method: 'POST' });
+        if (d.ok) showToast('✅ 连接成功！', 'success');
+        else showToast('❌ ' + (d.message || '连接失败'), 'error');
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+    finally { btn.innerHTML = '🔗 连接'; await updateStatus(); }
+}
+
+async function disconnect() {
+    try {
+        const d = await api('/api/disconnect', { method: 'POST' });
+        if (d.ok) showToast('已断开连接', 'warning');
+    } catch(e) { showToast('断开出错: ' + e.message, 'error'); }
+    finally { await updateStatus(); }
+}
+
+// ═══════════════════════════════════════════
+//  消息
+// ═══════════════════════════════════════════
+function appendMessage(msg) {
+    const log = document.getElementById('messageLog');
+    const empty = log.querySelector('.empty-state');
+    if (empty) empty.remove();
+    const entry = document.createElement('div');
+    const isSelf = msg.msg_type && msg.msg_type.startsWith('send');
+    entry.className = `message-entry ${isSelf ? 'self' : 'other'}`;
+    const senderName = msg.sender_name || (isSelf ? '我' : '未知');
+    const idx = messageCount;
+    entry.innerHTML = `
+        <div class="msg-meta">
+            <span class="msg-index">#${idx}</span>
+            <span class="msg-sender">${escapeHtml(senderName)}</span>
+            <span class="msg-time">${escapeHtml(msg.time || '')}</span>
+        </div>
+        <div>${escapeHtml(msg.content || '')}</div>`;
+    entry.style.cursor = 'pointer';
+    entry.title = '点击引用此消息';
+    entry.onclick = () => {
+        document.getElementById('replyIndex').value = idx;
+        switchTab('tab-advanced');
+        document.getElementById('replyText').focus();
+    };
+    log.appendChild(entry);
+    messageCount++;
+    log.scrollTop = log.scrollHeight;
+}
+
+async function loadRecentMessages() {
+    const log = document.getElementById('messageLog');
+    const limit = document.getElementById('msgLimit').value;
+    try {
+        const d = await api(`/api/messages?limit=${limit}`);
+        if (d.messages) {
+            log.innerHTML = '';
+            messageCount = 0;
+            if (d.messages.length === 0) { log.innerHTML = '<div class="empty-state">暂无消息记录</div>'; return; }
+            d.messages.forEach(appendMessage);
+        }
+    } catch(e) { console.warn('加载消息失败:', e); }
+}
+
+function filterMessages() {
+    const q = document.getElementById('searchMessage').value.toLowerCase();
+    document.querySelectorAll('.message-entry').forEach(el => {
+        el.style.display = el.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+    });
+}
+
+function clearMessages() {
+    if (!confirm('确定清空消息记录？')) return;
+    document.getElementById('messageLog').innerHTML = '<div class="empty-state">消息已清空</div>';
+    messageCount = 0;
+}
+
+// ═══════════════════════════════════════════
+//  发送消息
+// ═══════════════════════════════════════════
+function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.chip').forEach(el => el.classList.toggle('active', el.dataset.mode === mode));
+    const targetRow = document.getElementById('targetRow');
+    const countRow = document.getElementById('countRow');
+    const latexCtrls = document.getElementById('latexControls');
+    const nickInput = document.getElementById('inputTargetNick');
+    const isAt = mode === 'at' || mode === 'atspam';
+    const isMulti = mode === 'multi-at';
+    const isDm = mode === 'dm' || mode === 'dmspam';
+    const isSpam = ['spam','atspam','dmspam','latex-spam'].includes(mode);
+    const isLatex = mode === 'latex' || mode === 'latex-spam';
+
+    targetRow.style.display = (isAt || isMulti || isDm) ? 'block' : 'none';
+    countRow.style.display = isSpam ? 'flex' : 'none';
+    latexCtrls.style.display = isLatex ? 'block' : 'none';
+    nickInput.style.display = isAt ? 'block' : 'none';
+
+    const label = document.getElementById('targetLabel');
+    const hint = document.getElementById('targetHint');
+    if (isAt) { label.textContent = '目标用户'; hint.textContent = '输入用户ID（建议填写昵称以正确@对方）'; }
+    else if (isMulti) { label.textContent = '目标 (逗号分隔)'; hint.textContent = '例: user1,user2 或 user1:昵称'; }
+    else if (isDm) { label.textContent = '目标用户ID'; hint.textContent = '输入单个用户ID'; }
+    else { hint.textContent = ''; }
+
+    if (isLatex) updateLatexPreview();
+}
+
+function buildAtTarget() {
+    const uid = (document.getElementById('inputTargetId').value || '').trim();
+    const nick = (document.getElementById('inputTargetNick').value || '').trim();
+    return uid ? (nick ? `${uid}:${nick}` : uid) : '';
+}
+
+function getAtUserField(idEl, nickEl) {
+    const uid = (document.getElementById(idEl).value || '').trim();
+    const nick = (document.getElementById(nickEl).value || '').trim();
+    return uid ? (nick ? `${uid}:${nick}` : uid) : '';
+}
+
+async function sendMessage() {
+    if (!isConnected) { showToast('⚠️ 请先连接', 'warning'); return; }
+    const text = document.getElementById('inputMessage').value.trim();
+
+    if (currentMode.includes('latex')) {
+        if (latexItems.length === 0) { showToast('请先添加LaTeX片段', 'warning'); return; }
+    } else if (!text && !currentMode.includes('spam')) {
+        showToast('请输入消息内容', 'warning'); return;
+    }
+
+    const btn = document.getElementById('btnSend');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 发送中...';
+
+    try {
+        let body;
+        if (currentMode.includes('latex')) {
+            const msg = latexItems.map(i => i.code).join('\n');
+            body = { mode: currentMode === 'latex-spam' ? 'spam' : 'normal', text: msg,
+                     target: buildAtTarget(),
+                     count: parseInt(document.getElementById('inputCount').value) || 5,
+                     interval: parseFloat(document.getElementById('inputInterval').value) || 0.1 };
+        } else if (['at','atspam','multi-at'].includes(currentMode)) {
+            body = { mode: currentMode, text, target: buildAtTarget(),
+                     count: parseInt(document.getElementById('inputCount').value) || 5,
+                     interval: parseFloat(document.getElementById('inputInterval').value) || 0.1 };
+        } else {
+            body = { mode: currentMode, text, target: document.getElementById('inputTargetId').value.trim(),
+                     count: parseInt(document.getElementById('inputCount').value) || 5,
+                     interval: parseFloat(document.getElementById('inputInterval').value) || 0.1 };
+        }
+
+        const d = await api('/api/send', { method: 'POST', body });
+        if (d.ok) {
+            showToast('✅ ' + (d.message || '发送成功'), 'success');
+            if (currentMode === 'normal') appendMessage({ time: new Date().toLocaleTimeString(), sender_name: '我', content: text, msg_type: 'send' });
+            if (currentMode === 'normal' || currentMode === 'latex') {
+                document.getElementById('inputMessage').value = '';
+                if (currentMode === 'latex') clearLatexList();
+            }
+        } else { showToast('❌ ' + d.message, 'error'); }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+    finally { btn.innerHTML = '📤 发送'; btn.disabled = false; }
+}
+
+// ═══════════════════════════════════════════
+//  LaTeX 编辑器
+// ═══════════════════════════════════════════
+function updateLatexSettings() {
+    latexSettings.text = document.getElementById('latexText').value;
+    latexSettings.scale = parseFloat(document.getElementById('scaleSlider').value);
+    latexSettings.rotate = parseInt(document.getElementById('rotateSlider').value);
+    latexSettings.fontStyle = document.getElementById('fontStyleSelect').value;
+    latexSettings.hScale = parseFloat(document.getElementById('hScaleSlider').value);
+    latexSettings.vScale = parseFloat(document.getElementById('vScaleSlider').value);
+    latexSettings.border = document.getElementById('borderCheckbox').checked;
+}
+function updateValueDisplays() {
+    document.getElementById('scaleValue').textContent = latexSettings.scale.toFixed(1);
+    document.getElementById('rotateValue').textContent = latexSettings.rotate + '°';
+    const fsMap = {normal:'常规',bold:'粗体',italic:'斜体','bold-italic':'粗斜体'};
+    document.getElementById('fontStyleValue').textContent = fsMap[latexSettings.fontStyle] || latexSettings.fontStyle;
+    document.getElementById('hScaleValue').textContent = latexSettings.hScale.toFixed(1);
+    document.getElementById('vScaleValue').textContent = latexSettings.vScale.toFixed(1);
+}
+function generateLatexCode() {
+    const { text, scale, rotate, fontStyle, hScale, vScale, border } = latexSettings;
+    const escaped = text.replace(/[\\&%$#_{}~^]/g, '\\$&');
+    let fc = '';
+    if (fontStyle === 'bold') fc = '\\mathbf{';
+    else if (fontStyle === 'italic') fc = '\\mathit{';
+    else if (fontStyle === 'bold-italic') fc = '\\boldsymbol{';
+    let content = escaped;
+    if (fc) content = fc + content + '}';
+    let scaled = content;
+    if (hScale !== 1.0 || vScale !== 1.0) scaled = `\\scalebox{${hScale.toFixed(1)}][${vScale.toFixed(1)}}{${content}}`;
+    else if (scale !== 1.0) scaled = `\\scalebox{${scale.toFixed(1)}}{${content}}`;
+    let rotated = scaled;
+    if (rotate !== 0) rotated = `\\rotatebox{${rotate}}{${scaled}}`;
+    return `$${border ? '\\fbox{'+rotated+'}' : rotated}$`;
+}
+function updateLatexPreview() {
+    updateLatexSettings();
+    updateValueDisplays();
+    const code = generateLatexCode();
+    document.getElementById('latexPreview').textContent = code;
+    document.getElementById('latexCode').value = code;
+}
+function addToLatexList() {
+    if (!latexSettings.text.trim()) { showToast('请输入文本', 'warning'); return; }
+    const code = generateLatexCode();
+    latexItems.push({ text: latexSettings.text, code, settings: {...latexSettings} });
+    document.getElementById('latexListContainer').style.display = 'block';
+    renderLatexList();
+    document.getElementById('inputMessage').value = latexItems.map(i => i.code).join('\n');
+    showToast('✅ 已添加到列表', 'success');
+}
+function renderLatexList() {
+    const list = document.getElementById('latexList');
+    list.innerHTML = '';
+    if (latexItems.length === 0) { list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px">列表为空</div>'; document.getElementById('latexListContainer').style.display = 'none'; return; }
+    latexItems.forEach((item, i) => {
+        const el = document.createElement('div');
+        el.className = 'latex-list-item';
+        el.innerHTML = `<div class="latex-list-content">${escapeHtml(item.code)}</div>
+            <div class="latex-list-actions">
+                <button class="btn btn-outline btn-small" onclick="moveLatexUp(${i})" ${i===0?'disabled':''}>⬆</button>
+                <button class="btn btn-outline btn-small" onclick="moveLatexDown(${i})" ${i===latexItems.length-1?'disabled':''}>⬇</button>
+                <button class="btn btn-outline btn-small" onclick="editLatex(${i})">✏️</button>
+                <button class="btn btn-danger btn-small" onclick="removeLatex(${i})">删除</button>
+            </div>`;
+        list.appendChild(el);
+    });
+}
+function moveLatexUp(i) { if(i>0){[latexItems[i],latexItems[i-1]]=[latexItems[i-1],latexItems[i]];renderLatexList();syncLatexInput();} }
+function moveLatexDown(i) { if(i<latexItems.length-1){[latexItems[i],latexItems[i+1]]=[latexItems[i+1],latexItems[i]];renderLatexList();syncLatexInput();} }
+function editLatex(i) {
+    const item = latexItems[i];
+    document.getElementById('latexText').value = item.settings.text;
+    document.getElementById('scaleSlider').value = item.settings.scale;
+    document.getElementById('rotateSlider').value = item.settings.rotate;
+    document.getElementById('fontStyleSelect').value = item.settings.fontStyle;
+    document.getElementById('hScaleSlider').value = item.settings.hScale;
+    document.getElementById('vScaleSlider').value = item.settings.vScale;
+    document.getElementById('borderCheckbox').checked = item.settings.border;
+    latexItems.splice(i, 1);
+    renderLatexList();
+    updateLatexPreview();
+}
+function removeLatex(i) { if(confirm('确定删除？')){latexItems.splice(i,1);renderLatexList();syncLatexInput();showToast('✅ 已删除','success');} }
+function clearLatexList() { if(latexItems.length&&confirm('清空所有？')){latexItems=[];renderLatexList();document.getElementById('inputMessage').value='';} }
+function syncLatexInput() { document.getElementById('inputMessage').value = latexItems.map(x=>x.code).join('\n'); }
+function clearLatexSettings() {
+    ['latexText','scaleSlider','rotateSlider','fontStyleSelect','hScaleSlider','vScaleSlider','borderCheckbox'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el.type==='checkbox')el.checked=false;
+        else if(el.tagName==='SELECT')el.value='normal';
+        else el.value = el.id==='latexText'?'0':el.id==='scaleSlider'?'3.0':el.id==='rotateSlider'?'15':'1.0';
+    });
+    updateLatexPreview();
+}
+
+['latexText','scaleSlider','rotateSlider','fontStyleSelect','hScaleSlider','vScaleSlider','borderCheckbox'].forEach(id=>{
+    document.getElementById(id).addEventListener('input' in document.getElementById(id) ? 'input' : 'change', updateLatexPreview);
+});
+
+// ═══════════════════════════════════════════
+//  贴纸
+// ═══════════════════════════════════════════
+async function loadStickers() {
+    try {
+        const q = document.getElementById('stickerSearch').value;
+        const d = await api(`/api/stickers${q ? '?q='+encodeURIComponent(q) : ''}`);
+        if (d.stickers) { stickerData = d.stickers; renderStickers(d.stickers); }
+    } catch(e) { console.warn('加载贴纸失败:', e); }
+}
+function renderStickers(list) {
+    const grid = document.getElementById('stickerGrid');
+    grid.innerHTML = '';
+    if (!list.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:20px">无匹配</div>'; return; }
+    const emojiMap = {'六六六':'6️⃣','我想开了':'🌸','害羞':'😊','比心':'💜','委屈':'🥺','亲亲':'😘','酷':'😎','睡':'😴','发呆':'😶','可怜':'🥹','摊手':'🤷','头大':'😵','吓':'😱','吐血':'🤮','哼':'😤','嘿嘿':'😏','头秃':'🦲','暗中观察':'👀','我酸了':'🍋','打call':'📞','庆祝':'🎉','奋斗':'💪','惊讶':'😲','疑问':'❓','仔细分析':'🤔','撅嘴':'😗','泪奔':'😭','尊嘟假嘟':'🤨','略略略':'😛','困':'😪','折磨':'😫','抠鼻':'👃','鼓掌':'👏','斜眼笑':'😏','辣眼睛':'🌶️','哦哟':'🤭','吃瓜':'🍉','狗头':'🐶','敬礼':'🫡','哦':'😮','拿到红包':'🧧','牛吖':'🐮','贴贴':'🤗','爱心':'❤️','晚安':'🌙','太阳':'☀️','柠檬':'🍋','大冤种':'😅','吐了':'🤮','怒':'😠','玫瑰':'🌹','凋谢':'🥀','点赞':'👍','握手':'🤝','抱拳':'🙏','ok':'👌','拳头':'👊','鞭炮':'🧨','烟花':'🎆'};
+    list.forEach(s => {
+        const item = document.createElement('div');
+        item.className = 'sticker-item' + (selectedSticker === s.key ? ' selected' : '');
+        item.dataset.key = s.key;
+        item.innerHTML = `<span class="sticker-emoji">${emojiMap[s.name]||'😀'}</span>${escapeHtml(s.name)}`;
+        item.onclick = () => { selectedSticker = s.key; renderStickers(list); };
+        grid.appendChild(item);
+    });
+}
+function filterStickers() { loadStickers(); }
+
+async function sendSticker() {
+    if (!isConnected) { showToast('⚠️ 请先连接', 'warning'); return; }
+    if (!selectedSticker) { showToast('请选择贴纸', 'warning'); return; }
+    const text = document.getElementById('stickerText').value.trim();
+    const atRaw = getAtUserField('stickerAtUser', 'stickerAtNick');
+    const count = parseInt(document.getElementById('stickerCount').value) || 1;
+    const interval = parseFloat(document.getElementById('stickerInterval').value) || 0.1;
+    const btn = document.getElementById('btnSendSticker');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>...';
+
+    try {
+        let at_user='', at_nick='';
+        if (atRaw) { const p = atRaw.split(':'); at_user = p[0].trim(); at_nick = p[1] ? p[1].trim() : ''; }
+        const d = await api('/api/send-sticker', { method:'POST', body:{ name:selectedSticker, text, at_user, at_nickname:at_nick, count, interval } });
+        if (d.ok) {
+            showToast('✅ ' + d.message, 'success');
+            if (count === 1) { document.getElementById('stickerText').value=''; document.getElementById('stickerAtUser').value=''; document.getElementById('stickerAtNick').value=''; }
+        } else showToast('❌ ' + d.message, 'error');
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+    finally { btn.innerHTML = '发送贴纸'; btn.disabled = false; }
+}
+
+// ═══════════════════════════════════════════
+//  成员
+// ═══════════════════════════════════════════
+async function loadMembers() {
+    const list = document.getElementById('memberList');
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)"><span class="spinner spinner-lg"></span></div>';
+    try {
+        const d = await api('/api/members');
+        if (d.ok && d.members) { allMembers = d.members; renderMembers(d.members); showToast(`✅ ${d.count} 个成员`, 'success'); }
+        else list.innerHTML = `<div class="empty-state">${d.message||'获取失败'}</div>`;
+    } catch(e) { list.innerHTML = `<div class="empty-state">${e.message}</div>`; }
+}
+function renderMembers(members) {
+    const list = document.getElementById('memberList');
+    list.innerHTML = '';
+    if (!members.length) { list.innerHTML = '<div class="empty-state">无数据</div>'; return; }
+    members.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'member-item';
+        item.innerHTML = `<div class="member-avatar">${escapeHtml((m.nick_name||m.user_id||'?')[0])}</div>
+            <div class="member-info"><div class="member-name">${escapeHtml(m.nick_name||'未知')}</div><div class="member-id">${escapeHtml(m.user_id||'')}</div></div>`;
+        item.style.cursor = 'pointer';
+        item.onclick = () => { const id=m.user_id||''; if(id) navigator.clipboard.writeText(id).then(()=>showToast(`已复制 ${m.nick_name||id}`,'success',2000)); };
+        list.appendChild(item);
+    });
+}
+function filterMembers() { const q=document.getElementById('memberSearch').value.toLowerCase(); document.querySelectorAll('.member-item').forEach(el=>el.style.display=el.textContent.toLowerCase().includes(q)?'flex':'none'); }
+
+// ═══════════════════════════════════════════
+//  用户管理
+// ═══════════════════════════════════════════
+async function loadUsers() { try { const d = await api('/api/users'); if (d.users) { allUsers = d.users; renderUsers(d.users); } } catch(e) { console.warn('加载用户失败:', e); } }
+function renderUsers(users) {
+    const list = document.getElementById('userList'); list.innerHTML = '';
+    if (!users.length) { list.innerHTML = '<div class="empty-state">暂无用户</div>'; return; }
+    users.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'user-item';
+        item.innerHTML = `<div class="user-avatar">${escapeHtml((u.nickname||u.user_id||'?')[0])}</div>
+            <div class="user-info"><div class="user-name">${escapeHtml(u.nickname||'未知')}</div><div class="user-id">${escapeHtml(u.user_id||'')}</div></div>
+            <button class="btn btn-danger btn-small" onclick="deleteUser('${escapeHtml(u.user_id)}')">删除</button>`;
+        item.querySelector('.user-info').onclick = () => {
+            document.getElementById('addUserId').value = u.user_id;
+            document.getElementById('addUserNick').value = u.nickname;
+            document.getElementById('inputTargetId').value = u.user_id;
+            document.getElementById('inputTargetNick').value = u.nickname;
+            showToast(`已填入 ${u.nickname}`, 'info', 2000);
+        };
+        list.appendChild(item);
+    });
+}
+function filterUsers() { const q=document.getElementById('userSearch').value.toLowerCase(); document.querySelectorAll('.user-item').forEach(el=>el.style.display=el.textContent.toLowerCase().includes(q)?'flex':'none'); }
+async function addUser() {
+    const uid = document.getElementById('addUserId').value.trim();
+    const nick = document.getElementById('addUserNick').value.trim();
+    if (!uid) { showToast('用户ID不能为空', 'warning'); return; }
+    try { const d = await api('/api/users', { method:'POST', body:{user_id:uid, nickname:nick||uid} });
+        if (d.ok) { showToast('✅ 已添加', 'success'); document.getElementById('addUserId').value=''; document.getElementById('addUserNick').value=''; loadUsers(); }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+async function deleteUser(uid) {
+    if (!confirm(`删除 ${uid}？`)) return;
+    try { const d = await api(`/api/users/${encodeURIComponent(uid)}`, { method:'DELETE' });
+        if (d.ok) { showToast('✅ 已删除', 'success'); loadUsers(); }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  文件上传
+// ═══════════════════════════════════════════
+function handleImageFileSelect(e) {
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > 20*1024*1024) { showToast('❌ 不能超过20MB', 'error'); e.target.value=''; return; }
+    const valid = ['image/jpeg','image/jpg','image/png','image/gif','image/bmp','image/webp'];
+    if (!valid.includes(file.type)) { showToast('❌ 不支持的格式', 'error'); e.target.value=''; return; }
+    selectedImageFile = file;
+    const label = document.getElementById('imageFileLabel');
+    label.querySelector('.file-name').textContent = file.name.length > 30 ? file.name.substring(0,27)+'...' : file.name;
+    label.classList.add('has-file');
+    const sz = file.size > 1048576 ? (file.size/1048576).toFixed(2)+' MB' : (file.size/1024).toFixed(2)+' KB';
+    document.getElementById('imageFileSize').textContent = `大小: ${sz}`;
+    document.getElementById('imageFileType').textContent = `类型: ${file.type.split('/')[1].toUpperCase()}`;
+    const r = new FileReader();
+    r.onload = ev => { document.getElementById('imagePreviewImg').src = ev.target.result; document.getElementById('imagePreview').classList.add('visible'); };
+    r.readAsDataURL(file);
+}
+function handleFileSelect(e) {
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > 20*1024*1024) { showToast('❌ 不能超过20MB', 'error'); e.target.value=''; return; }
+    selectedDocumentFile = file;
+    const label = document.getElementById('documentFileLabel');
+    label.querySelector('.file-name').textContent = file.name.length > 30 ? file.name.substring(0,27)+'...' : file.name;
+    label.classList.add('has-file');
+    const sz = file.size > 1048576 ? (file.size/1048576).toFixed(2)+' MB' : (file.size/1024).toFixed(2)+' KB';
+    document.getElementById('fileSize').textContent = `大小: ${sz}`;
+    document.getElementById('fileType').textContent = `类型: ${file.name.split('.').pop().toUpperCase()}`;
+    document.getElementById('fileInfo').style.display = 'block';
+}
+async function uploadFile(file, apiPath, btnId, labelId, fileInputId, infoId) {
+    if (!isConnected) { showToast('⚠️ 请先连接', 'warning'); return; }
+    const atRaw = getAtUserField(apiPath.includes('image') ? 'imageAtUser' : 'fileAtUser',
+                                  apiPath.includes('image') ? 'imageAtNick' : 'fileAtNick');
+    const btn = document.getElementById(btnId); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 上传中...';
+    try {
+        const fd = new FormData(); fd.append('file', file); if (atRaw) fd.append('at_user', atRaw);
+        const res = await fetch(`${API_BASE}/api/${apiPath}`, { method:'POST', body: fd });
+        const d = await res.json();
+        if (d.ok) {
+            showToast(`✅ ${apiPath==='send-image'?'图片':'文件'}发送成功`, 'success');
+            selectedImageFile = selectedDocumentFile = null;
+            document.getElementById(fileInputId).value = '';
+            document.getElementById(labelId).querySelector('.file-name').textContent = '点击选择文件...';
+            document.getElementById(labelId).classList.remove('has-file');
+            if (infoId) document.getElementById(infoId).style.display = 'none';
+            document.getElementById('imagePreview').classList.remove('visible');
+        } else showToast('❌ ' + d.message, 'error');
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+    finally { btn.innerHTML = apiPath === 'send-image' ? '发送图片' : '发送文件'; btn.disabled = false; }
+}
+function sendImage() { if (!selectedImageFile) { showToast('请选择图片','warning'); return; } uploadFile(selectedImageFile, 'send-image', 'btnSendImage', 'imageFileLabel', 'imageFile', 'imagePreview'); }
+function sendFile() { if (!selectedDocumentFile) { showToast('请选择文件','warning'); return; } uploadFile(selectedDocumentFile, 'send-file', 'btnSendFile', 'documentFileLabel', 'documentFile', 'fileInfo'); }
+
+// ═══════════════════════════════════════════
+//  高级功能
+// ═══════════════════════════════════════════
+async function sendReply() {
+    if (!isConnected) { showToast('⚠️ 请先连接', 'warning'); return; }
+    const idx = parseInt(document.getElementById('replyIndex').value);
+    const text = document.getElementById('replyText').value.trim();
+    if (!text) { showToast('请输入回复内容', 'warning'); return; }
+    if (isNaN(idx) || idx < 0) { showToast('无效序号', 'warning'); return; }
+    const atRaw = getAtUserField('replyAtUser', 'replyAtNick');
+    let at_u='', at_n='';
+    if (atRaw) { const p=atRaw.split(':'); at_u=p[0].trim(); at_n=p[1]?p[1].trim():''; }
+    const count = parseInt(document.getElementById('replyCount').value) || 1;
+    try {
+        const d = await api('/api/send-reply', { method:'POST', body:{index:idx, text, at_user:at_u, at_nickname:at_n, count, interval:parseFloat(document.getElementById('settingInterval').value)||0.1} });
+        if (d.ok) { showToast('✅ ' + d.message, 'success'); document.getElementById('replyText').value=''; }
+        else showToast('❌ ' + d.message, 'error');
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+async function sendAtAll() {
+    if (!isConnected) { showToast('⚠️ 请先连接', 'warning'); return; }
+    const text = document.getElementById('atAllText').value.trim();
+    if (!text) { showToast('请输入消息', 'warning'); return; }
+    if (!confirm('⚠️ 确定艾特全体？')) return;
+    try {
+        const md = await api('/api/members');
+        if (md.ok && md.members && md.members.length) {
+            const ids = md.members.map(m=>m.user_id).filter(Boolean).slice(0,20).map(id=>`${id}:成员`);
+            const d = await api('/api/send', { method:'POST', body:{mode:'multi-at', text, target:ids.join(',')} });
+            d.ok ? showToast('✅ 艾特全体成功', 'success') : showToast('❌ ' + d.message, 'error');
+        }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  代理模式
+// ═══════════════════════════════════════════
+async function enableForwardMode() {
+    if (!isConnected) { showToast('⚠️ 请先连接', 'warning'); return; }
+    const atOnly = document.getElementById('settingForwardAtOnly').checked;
+    const atYb = document.getElementById('settingForwardAtYuanbao').checked;
+    try {
+        const d = await api('/api/forward-mode/enable', { method:'POST', body:{at_only:atOnly, forward_at_yuanbao:atYb} });
+        if (d.ok) {
+            showToast('✅ ' + d.message, 'success');
+            forwardModeEnabled = true;
+            document.getElementById('settingForwardMode').checked = true;
+            getForwardModeConfig();
+        } else showToast('❌ ' + d.message, 'error');
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+async function disableForwardMode() {
+    try {
+        const d = await api('/api/forward-mode/disable', { method:'POST' });
+        if (d.ok) {
+            showToast('✅ ' + d.message, 'warning');
+            forwardModeEnabled = false;
+            document.getElementById('settingForwardMode').checked = false;
+            getForwardModeConfig();
+        }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+async function clearForwardQueue() {
+    try {
+        const d = await api('/api/forward-mode/clear-queue', { method:'POST' });
+        if (d.ok) { showToast('✅ 队列已清空', 'success'); getForwardModeConfig(); }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+async function getForwardModeConfig() {
+    try {
+        const d = await api('/api/forward-mode/config');
+        if (!d.ok) return;
+        forwardModeEnabled = d.enabled;
+        forwardAtYuanbao = d.forward_at_yuanbao;
+
+        document.getElementById('settingForwardMode').checked = d.enabled;
+        document.getElementById('settingForwardAtOnly').checked = d.at_only;
+        document.getElementById('settingForwardAtYuanbao').checked = d.forward_at_yuanbao;
+
+        const statusEl = document.getElementById('forwardModeStatus');
+        const statusText = document.getElementById('forwardModeStatusText');
+        statusEl.style.display = 'block';
+        statusText.innerHTML = `
+            <div>状态: <strong style="color:${d.enabled?'var(--success)':'var(--danger)'}">${d.enabled?'已启用':'未启用'}</strong></div>
+            <div>仅艾特: ${d.at_only?'是':'否'} | @元宝: ${d.forward_at_yuanbao?'是':'否'}</div>
+            <div>队列: ${d.queue_length} | 工作线程: ${d.worker_running?'运行中':'空闲'}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">中转群: ${d.image_group_code||'未配置'} | 元宝ID: ${d.yuanbao_id?d.yuanbao_id.substring(0,12)+'...':'未配置'}</div>`;
+
+        const queuePanel = document.getElementById('proxyQueuePanel');
+        const queueDetail = await api('/api/forward-mode/queue');
+        if (queueDetail.ok && queueDetail.items.length) {
+            queuePanel.style.display = 'block';
+            queuePanel.innerHTML = '<div style="font-size:12px;color:var(--ink-muted-48);margin-bottom:6px">📋 队列详情:</div>' +
+                queueDetail.items.map((it,i)=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border-soft)">#${i+1} ${escapeHtml(it.sender_name||'')}: ${escapeHtml(it.content||'')} ${it.done?'✅':'⏳'}</div>`).join('');
+        } else {
+            queuePanel.style.display = 'none';
+        }
+    } catch(e) { console.warn('获取代理配置失败:', e); }
+}
+
+function updateForwardAtYuanbao(cb) {
+    const enabled = cb.checked;
+    // 动态更新流程说明
+    const wf = document.getElementById('workflowDesc');
+    if (wf) {
+        if (enabled) {
+            wf.innerHTML = '<div><strong>①</strong> 源群消息 → 实时转发到中转群@元宝</div><div><strong>②</strong> 元宝回复 → 自动转发回原群</div><div style="color:var(--accent)">🔔 当前：@元宝模式（等回复回原群）</div>';
+        } else {
+            wf.innerHTML = '<div><strong>①</strong> 源群消息 → 直接转发到中转群</div><div><strong>②</strong> 转发完成，不等回复 ⚡</div><div style="color:var(--success)">⚡ 当前：直转模式（实时转发，最快）</div>';
+        }
+    }
+    api('/api/forward-mode/toggle-at-yuanbao', { method:'POST', body:{enabled} })
+        .then(d => { if (d.ok) showToast('✅ ' + d.message, 'success'); })
+        .catch(e => showToast('❌ ' + e.message, 'error'));
+}
+
+function updateForwardAtOnly(cb) {
+    if (forwardModeEnabled) enableForwardMode();
+}
+
+function onForwardModeToggle(cb) {
+    if (cb.checked) enableForwardMode();
+    else disableForwardMode();
+}
+
+// ═══════════════════════════════════════════
+//  自动回复
+// ═══════════════════════════════════════════
+function onAutoReplyToggle(cb) {
+    if (cb.checked) enableAutoReply();
+    else disableAutoReply();
+}
+
+async function enableAutoReply() {
+    try {
+        const d = await api('/api/auto-reply/enable', { method:'POST' });
+        if (d.ok) {
+            autoReplyEnabled = true;
+            document.getElementById('settingAutoReply').checked = true;
+            document.getElementById('btnEnableAutoReply').style.display = 'none';
+            document.getElementById('btnDisableAutoReply').style.display = 'inline-flex';
+            showToast('✅ 自动回复已启用', 'success');
+            updateStatusDisplay();
+        }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+async function disableAutoReply() {
+    try {
+        const d = await api('/api/auto-reply/disable', { method:'POST' });
+        if (d.ok) {
+            autoReplyEnabled = false;
+            document.getElementById('settingAutoReply').checked = false;
+            document.getElementById('btnEnableAutoReply').style.display = 'inline-flex';
+            document.getElementById('btnDisableAutoReply').style.display = 'none';
+            showToast('⏹️ 自动回复已禁用', 'warning');
+            updateStatusDisplay();
+        }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+async function getAutoReplyStatus() {
+    try {
+        const d = await api('/api/auto-reply/status');
+        if (d.ok) {
+            autoReplyEnabled = d.enabled;
+            document.getElementById('settingAutoReply').checked = d.enabled;
+            document.getElementById('btnEnableAutoReply').style.display = d.enabled ? 'none' : 'inline-flex';
+            document.getElementById('btnDisableAutoReply').style.display = d.enabled ? 'inline-flex' : 'none';
+            if (d.config) {
+                document.getElementById('settingGroupReply').value = d.config.auto_reply_group_text || '';
+                document.getElementById('settingC2cReply').value = d.config.auto_reply_c2c_text || '';
+            }
+            updateStatusDisplay();
+        }
+    } catch(e) { console.warn('获取自动回复状态失败:', e); }
+}
+
+async function testAutoReply() {
+    const text = prompt('输入测试文本:');
+    if (!text) return;
+    try {
+        const d = await api('/api/auto-reply/test', { method:'POST', body:{text, is_group:true} });
+        if (d.ok) {
+            const result = document.getElementById('autoReplyTestResult');
+            const txt = document.getElementById('autoReplyTestText');
+            result.style.display = 'block';
+            txt.innerHTML = `输入: "${text}"<br>回复: "${d.reply}"<br>匹配: ${d.matched?'是':'否'}`;
+            setTimeout(() => result.style.display = 'none', 5000);
+        }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+async function addAutoReplyRule() {
+    const match_type = prompt('匹配类型 (exact/contains/startswith/endswith/regex):', 'contains');
+    if (!match_type) return;
+    const pattern = prompt('匹配模式:');
+    if (!pattern) return;
+    const reply_text = prompt('回复文本:');
+    if (!reply_text) return;
+    try {
+        const d = await api('/api/auto-reply/rules', { method:'POST', body:{match_type, pattern, reply_text, group_only:false, enabled:true} });
+        if (d.ok) showToast('✅ 规则已添加', 'success');
+        else showToast('❌ ' + d.message, 'error');
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+async function loadAutoReplyRules() {
+    try {
+        const d = await api('/api/auto-reply/rules');
+        if (d.ok) {
+            autoReplyRules = d.rules;
+            showToast(`✅ 已加载 ${d.count} 条规则`, 'success');
+        }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  心跳 & 系统
+// ═══════════════════════════════════════════
+async function setHeartbeatInterval() {
+    const iv = parseFloat(document.getElementById('settingHeartbeatInterval').value);
+    try {
+        const d = await api('/api/heartbeat/interval', { method:'POST', body:{interval:iv} });
+        if (d.ok) showToast('✅ ' + d.message, 'success');
+        else showToast('❌ ' + d.message, 'error');
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+async function checkHeartbeat() {
+    try {
+        const d = await api('/api/heartbeat');
+        if (d.ok) {
+            const info = `心跳: ${d.connected?'已连接':'未连接'} | 间隔: ${d.heartbeat_interval}s | 心跳循环: ${d.heartbeat_running?'✅':'❌'} | 接收循环: ${d.receive_loop_running?'✅':'❌'}`;
+            showToast(info, 'info', 4000);
+        }
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  群聊管理
+// ═══════════════════════════════════════════
+async function loadGroups() {
+    try {
+        const d = await api('/api/groups');
+        if (d.ok && d.groups) {
+            const sel = document.getElementById('groupSelector');
+            sel.innerHTML = '<option value="">请选择群聊</option>' + d.groups.map(g=>`<option value="${g.group_code}">${g.group_code} (${g.message_count||0}条)</option>`).join('');
+            const list = document.getElementById('groupsList');
+            if (d.groups.length) {
+                list.innerHTML = d.groups.map(g=>{
+                    const lastMsg = g.last_message ? g.last_message.substring(0,40) : '暂无消息';
+                    return `<div class="member-item"><div class="member-avatar">${g.group_code.substring(0,2)}</div><div class="member-info"><div class="member-name">${g.group_code}</div><div class="member-id">${lastMsg} | ${g.last_message_time||''}</div></div></div>`;
+                }).join('');
+            } else {
+                list.innerHTML = '<div class="empty-state">暂无群聊数据</div>';
+            }
+        }
+    } catch(e) { console.warn('加载群聊失败:', e); }
+}
+
+async function switchGroup() {
+    const gc = document.getElementById('groupSelector').value;
+    if (!gc) { showToast('请选择群聊', 'warning'); return; }
+    try {
+        const d = await api('/api/groups/switch', { method:'POST', body:{group_code:gc} });
+        if (d.ok) { showToast('✅ ' + d.message, 'success'); document.getElementById('settingGroupCode').value = gc; }
+        else showToast('❌ ' + d.message, 'error');
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  设置持久化
+// ═══════════════════════════════════════════
+async function loadSettings() {
+    try {
+        const d = await api('/api/settings');
+        if (d) {
+            document.getElementById('settingGroupCode').value = d.group_code || '';
+            document.getElementById('settingInterval').value = d.interval || 0.1;
+            document.getElementById('settingHeartbeatInterval').value = d.heartbeat_interval || 1.0;
+            document.getElementById('settingAutoConnect').checked = d.auto_connect !== false;
+            document.getElementById('settingGroupReply').value = d.group_reply_text || '';
+            document.getElementById('settingC2cReply').value = d.c2c_reply_text || '';
+            document.getElementById('settingForwardMode').checked = d.forward_mode_enabled || false;
+            document.getElementById('settingForwardAtOnly').checked = d.forward_at_only || false;
+            document.getElementById('settingForwardAtYuanbao').checked = d.forward_at_yuanbao !== false;
+        }
+    } catch(e) { console.warn('加载设置失败:', e); }
+}
+
+async function saveSettings() {
+    const body = {
+        group_code: document.getElementById('settingGroupCode').value.trim(),
+        interval: parseFloat(document.getElementById('settingInterval').value) || 0.1,
+        heartbeat_interval: parseFloat(document.getElementById('settingHeartbeatInterval').value) || 1.0,
+        auto_reply_enabled: document.getElementById('settingAutoReply').checked,
+        group_reply_text: document.getElementById('settingGroupReply').value,
+        c2c_reply_text: document.getElementById('settingC2cReply').value,
+        forward_mode_enabled: document.getElementById('settingForwardMode').checked,
+        forward_at_only: document.getElementById('settingForwardAtOnly').checked,
+        forward_at_yuanbao: document.getElementById('settingForwardAtYuanbao').checked,
+    };
+    try {
+        const d = await api('/api/settings', { method:'POST', body });
+        if (d.ok) showToast('✅ 设置已保存', 'success');
+        else showToast('❌ ' + d.message, 'error');
+    } catch(e) { showToast('❌ ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  SSE 实时事件流
+// ═══════════════════════════════════════════
+function initSSE() {
+    if (sseConnection) { sseConnection.close(); }
+    const evtSource = new EventSource(`${API_BASE}/api/events`);
+    sseConnection = evtSource;
+
+    evtSource.onmessage = (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            if (data.type === 'proxy_status') {
+                forwardModeEnabled = data.enabled;
+                forwardAtYuanbao = data.forward_at_yuanbao;
+                forwardQueueLength = data.queue_length;
+                forwardProcessing = data.worker_running;
+                updateStatusDisplay();
+                if (data.items && data.items.length) {
+                    const panel = document.getElementById('proxyQueuePanel');
+                    panel.style.display = 'block';
+                    panel.innerHTML = '<div style="font-size:12px;color:var(--ink-muted-48);margin-bottom:6px">📋 队列详情:</div>' +
+                        data.items.map((it,i)=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border-soft)">#${i+1} ${escapeHtml(it.sender||'')}: ${escapeHtml(it.content||'')} ${it.done?'✅':'⏳'}</div>`).join('');
+                }
+            } else if (data.content !== undefined) {
+                appendMessage(data);
+            }
+        } catch(err) { console.warn('SSE 解析错误:', err); }
+    };
+
+    evtSource.onerror = () => {
+        evtSource.close();
+        sseConnection = null;
+        sseRetryCount++;
+        if (sseRetryCount <= SSE_MAX_RETRY) {
+            console.log(`SSE 重连 (${sseRetryCount}/${SSE_MAX_RETRY})...`);
+            sseReconnectTimer = setTimeout(initSSE, SSE_RETRY_DELAY);
+        } else {
+            showToast('⚠️ 实时连接断开，请刷新页面', 'error', 5000);
+        }
+    };
+
+    evtSource.onopen = () => {
+        sseRetryCount = 0;
+        console.log('SSE 已连接');
+    };
+}
+
+// ═══════════════════════════════════════════
+//  初始化
+// ═══════════════════════════════════════════
+async function autoConnect() {
+    if (!autoConnectEnabled) return;
+    try {
+        const d = await api('/api/status');
+        if (d.connected) { isConnected = true; updateStatusDisplay(); return; }
+    } catch(e) {}
+    showToast('🔄 正在自动连接...', 'info', 2000);
+    await connect();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateLatexPreview();
+    initSSE();
+    updateStatus();
+    setTimeout(autoConnect, 1000);
+    setInterval(updateStatus, 10000);
+});
+
+window.addEventListener('beforeunload', () => {
+    if (sseConnection) sseConnection.close();
+    if (sseReconnectTimer) clearTimeout(sseReconnectTimer);
+});
+</script>
+</body>
+</html>

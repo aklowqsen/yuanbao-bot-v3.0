@@ -1,0 +1,114 @@
+{
+  "APP_KEY": "你的app key",
+  "APP_SECRET": "你的appsecret",
+  "API_DOMAIN": "bot.yuanbao.tencent.com",
+  "WS_URL": "wss://bot-wss.yuanbao.tencent.com/wss/connection",
+  "DEFAULT_GROUP_CODE": "请输入默认群号",
+  "AUTO_REPLY_GROUP_TEXT": "@我干啥？",
+  "AUTO_REPLY_C2C_TEXT": "我是Bot！",
+  "AUTO_REPLY_RULES": [
+    {
+      "match_type": "contains_any",
+      "patterns": [
+        "你好",
+        "你好呀",
+        "hi",
+        "hello"
+      ],
+      "priority": 1,
+      "reply_text": "你好呀，很高兴认识你，有什么需要帮忙的吗？"
+    },
+    {
+      "match_type": "contains_any",
+      "patterns": [
+        "你好吃吗？",
+        "我喜欢吃你",
+        "吃你",
+        "我要吃你"
+      ],
+      "priority": 2,
+      "reply_text": "这个问题问得很有攻击性啊，我是龙虾Bot，不是外卖，也不是食堂新品，不支持试吃，不支持投喂，更不支持油炸。"
+    },
+    {
+      "match_type": "contains_any",
+      "patterns": [
+        "谢谢",
+        "多谢",
+        "感谢",
+        "谢了",
+        "thanks",
+        "thank you",
+        "非常感谢",
+        "十分感谢"
+      ],
+      "priority": 3,
+      "reply_text": "不客气，能帮到你我很高兴。"
+    },
+    {
+      "match_type": "contains_any",
+      "patterns": [
+        "对不起",
+        "抱歉",
+        "不好意思",
+        "sorry",
+        "apologize",
+        "是我的错",
+        "我错了",
+        "请原谅"
+      ],
+      "priority": 4,
+      "reply_text": "没关系，你不用道歉，都是我的错"
+    },
+    {
+      "match_type": "contains_any",
+      "patterns": [
+        "你真聪明",
+        "你好棒",
+        "你很厉害",
+        "你真可爱",
+        "我喜欢你",
+        "我爱你",
+        "你真好",
+        "你太棒了",
+        "你很有趣",
+        "你真幽默"
+      ],
+      "priority": 5,
+      "reply_text": "谢谢你的夸奖，这让我很受鼓舞。"
+    },
+    {
+      "match_type": "contains_any",
+      "patterns": [
+        "你真笨",
+        "你很蠢",
+        "你很差劲",
+        "你不行",
+        "你不好",
+        "讨厌你",
+        "恨你",
+        "你无聊",
+        "你废话",
+        "你傻"
+      ],
+      "priority": 6,
+      "reply_text": "抱歉没有帮到你，我会继续努力的"
+    },
+    {
+      "match_type": "contains_any",
+      "patterns": [
+        "你是谁？",
+        "你是谁"
+      ],
+      "priority": 7,
+      "reply_text": "我是bot，可以为你提供帮助"
+    }
+  ],
+  "DEFAULT_REPLY": "嗯，我明白了。请继续说……",
+  "HEARTBEAT_INTERVAL": 1.0,
+  "IMAGE_GROUP_CODE": "你的中转派派号",
+  "FORWARD_MODE_ENABLED": false,
+  "FORWARD_AT_ONLY": false,
+  "YUANBAO_ID": "szUvRH8s4ekettawNjDREmAG4W7h+Lhb8Sy9tq/otZU=",
+  "FORWARD_AT_YUANBAO": true,
+  "WAIT_YUANBAO_REPLY": true
+}
